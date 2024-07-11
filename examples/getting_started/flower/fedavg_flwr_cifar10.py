@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nvflare import FedAvg, FedJob
+from nvflare import FedJob
 from nvflare.app_opt.flower.controller import FlowerController
 from nvflare.app_opt.flower.executor import FlowerExecutor
-
 
 if __name__ == "__main__":
     n_clients = 2
@@ -24,25 +23,19 @@ if __name__ == "__main__":
     job = FedJob(name="cifar10_flwr")
 
     # Define the controller workflow and send to server
-    controller = FlowerController(
-        server_app="server:app"
-    )
+    controller = FlowerController(server_app="server:app")
     job.to(controller, "server")
 
     # Add flwr server code
     job.to("server.py", "server")
-    job.to("task.py", "server")
 
     # Add clients
-    for i in range(n_clients):
-        executor = FlowerExecutor(
-            client_app="client:app"
-        )
+    for i in range(1, n_clients + 1):
+        executor = FlowerExecutor(client_app="client:app")
         job.to(executor, f"site-{i}", gpu=0)
 
         # Add flwr client code
         job.to("client.py", f"site-{i}")
-        job.to("task.py", f"site-{i}")
 
     job.export_job("/tmp/nvflare/jobs/job_config")
     job.simulator_run("/tmp/nvflare/jobs/workdir")
