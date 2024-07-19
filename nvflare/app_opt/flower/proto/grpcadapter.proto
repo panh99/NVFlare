@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package flwr.proto;
+package flare.flwr.proto;
 
 service GrpcAdapter {
   rpc SendReceive(MessageContainer) returns (MessageContainer) {}

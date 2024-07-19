@@ -6,18 +6,18 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class MessageContainer(_message.Message):
-    __slots__ = ["grpc_message_content", "grpc_message_name", "metadata"]
+    __slots__ = ("metadata", "grpc_message_name", "grpc_message_content")
     class MetadataEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    GRPC_MESSAGE_CONTENT_FIELD_NUMBER: _ClassVar[int]
-    GRPC_MESSAGE_NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    grpc_message_content: bytes
-    grpc_message_name: str
+    GRPC_MESSAGE_NAME_FIELD_NUMBER: _ClassVar[int]
+    GRPC_MESSAGE_CONTENT_FIELD_NUMBER: _ClassVar[int]
     metadata: _containers.ScalarMap[str, str]
+    grpc_message_name: str
+    grpc_message_content: bytes
     def __init__(self, metadata: _Optional[_Mapping[str, str]] = ..., grpc_message_name: _Optional[str] = ..., grpc_message_content: _Optional[bytes] = ...) -> None: ...

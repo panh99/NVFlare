@@ -28,7 +28,7 @@ class GrpcAdapterStub(object):
             channel: A grpc.Channel.
         """
         self.SendReceive = channel.unary_unary(
-                '/flwr.proto.GrpcAdapter/SendReceive',
+                '/flare.flwr.proto.GrpcAdapter/SendReceive',
                 request_serializer=grpcadapter__pb2.MessageContainer.SerializeToString,
                 response_deserializer=grpcadapter__pb2.MessageContainer.FromString,
                 )
@@ -53,7 +53,7 @@ def add_GrpcAdapterServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'flwr.proto.GrpcAdapter', rpc_method_handlers)
+            'flare.flwr.proto.GrpcAdapter', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -72,7 +72,7 @@ class GrpcAdapter(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/flwr.proto.GrpcAdapter/SendReceive',
+        return grpc.experimental.unary_unary(request, target, '/flare.flwr.proto.GrpcAdapter/SendReceive',
             grpcadapter__pb2.MessageContainer.SerializeToString,
             grpcadapter__pb2.MessageContainer.FromString,
             options, channel_credentials,

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import nvflare.app_opt.flower.proto.grpcadapter_pb2 as pb2
-from nvflare.app_opt.flower.proto.grpcadapter_pb2_grpc import GrpcAdapterServicer
+from flwr.proto.grpcadapter_pb2_grpc import GrpcAdapterServicer
 from nvflare.fuel.utils.obj_utils import get_logger
 
 

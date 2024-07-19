@@ -26,19 +26,19 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11grpcadapter.proto\x12\nflwr.proto\"\xba\x01\n\x10MessageContainer\x12<\n\x08metadata\x18\x01 \x03(\x0b\x32*.flwr.proto.MessageContainer.MetadataEntry\x12\x19\n\x11grpc_message_name\x18\x02 \x01(\t\x12\x1c\n\x14grpc_message_content\x18\x03 \x01(\x0c\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x32Z\n\x0bGrpcAdapter\x12K\n\x0bSendReceive\x12\x1c.flwr.proto.MessageContainer\x1a\x1c.flwr.proto.MessageContainer\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11grpcadapter.proto\x12\x10\x66lare.flwr.proto\"\xc0\x01\n\x10MessageContainer\x12\x42\n\x08metadata\x18\x01 \x03(\x0b\x32\x30.flare.flwr.proto.MessageContainer.MetadataEntry\x12\x19\n\x11grpc_message_name\x18\x02 \x01(\t\x12\x1c\n\x14grpc_message_content\x18\x03 \x01(\x0c\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x32\x66\n\x0bGrpcAdapter\x12W\n\x0bSendReceive\x12\".flare.flwr.proto.MessageContainer\x1a\".flare.flwr.proto.MessageContainer\"\x00\x62\x06proto3')
 
-_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'grpcadapter_pb2', globals())
+_globals = globals()
+_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'grpcadapter_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
-
   DESCRIPTOR._options = None
-  _MESSAGECONTAINER_METADATAENTRY._options = None
-  _MESSAGECONTAINER_METADATAENTRY._serialized_options = b'8\001'
-  _MESSAGECONTAINER._serialized_start=34
-  _MESSAGECONTAINER._serialized_end=220
-  _MESSAGECONTAINER_METADATAENTRY._serialized_start=173
-  _MESSAGECONTAINER_METADATAENTRY._serialized_end=220
-  _GRPCADAPTER._serialized_start=222
-  _GRPCADAPTER._serialized_end=312
+  _globals['_MESSAGECONTAINER_METADATAENTRY']._options = None
+  _globals['_MESSAGECONTAINER_METADATAENTRY']._serialized_options = b'8\001'
+  _globals['_MESSAGECONTAINER']._serialized_start=40
+  _globals['_MESSAGECONTAINER']._serialized_end=232
+  _globals['_MESSAGECONTAINER_METADATAENTRY']._serialized_start=185
+  _globals['_MESSAGECONTAINER_METADATAENTRY']._serialized_end=232
+  _globals['_GRPCADAPTER']._serialized_start=234
+  _globals['_GRPCADAPTER']._serialized_end=336
 # @@protoc_insertion_point(module_scope)
