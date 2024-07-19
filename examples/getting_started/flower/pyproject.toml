@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flower_on_flare"
+version = "0.0.1"
+description = ""
+license = { text = "Apache License (2.0)" }
+dependencies = [
+    "flwr[simulation]>=1.9.0,<2.0",
+    "numpy>=1.21.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "dummy"
+
+[tool.flwr.app.components]
+serverapp = "demo.server:app"
+clientapp = "demo.client:app"
+
+[tool.flwr.federations]
+default = "simulation"
+
+[tool.flwr.federations.simulation]
+options.num-supernodes = 10
+
+[tool.flwr.federations.nvflare-insecure]
+address = "localhost:9093"
+insecure = true
+
+[tool.flwr.federations.nvflare-secure]
+address = "localhost:9093"
+root-certificates = "path/to/certs"
