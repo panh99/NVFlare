@@ -65,8 +65,8 @@ def _locate_all_files(directory: Path) -> List[Path]:
     return files
 
 
-class FlareEngine(FlowerSuperExecExecutor):
-    """Flare engine executor for Flower SuperExec."""
+class PocEngine(FlowerSuperExecExecutor):
+    """POC engine executor for Flower SuperExec."""
 
     _sess = None
 
@@ -160,4 +160,4 @@ class FlareEngine(FlowerSuperExecExecutor):
         return self._sess
 
 
-executor = FlareEngine()
+executor = PocEngine()
