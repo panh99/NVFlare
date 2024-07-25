@@ -23,7 +23,7 @@ serverapp = "demo.server:app"
 clientapp = "demo.client:app"
 
 [tool.flwr.federations]
-default = "simulation"
+default = "nvflare-insecure"
 
 [tool.flwr.federations.simulation]
 options.num-supernodes = 10

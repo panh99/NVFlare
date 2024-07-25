@@ -14,6 +14,7 @@
 
 import os
 import sys
+from logging import ERROR
 from pathlib import Path
 from typing import List
 
@@ -21,14 +22,21 @@ import pathspec
 from flwr.cli.config_utils import get_fab_metadata
 from flwr.cli.install import install_from_fab
 from flwr.common.config import get_project_config
+from flwr.common.logger import log
+from flwr.common.typing import UserConfig
 from flwr.superexec.executor import Executor as FlowerSuperExecExecutor
 from flwr.superexec.executor import RunTracker
 from typing_extensions import Dict, Optional, override
 
+import nvflare.tool.poc.poc_commands as cmds
 from nvflare import FedJob
 from nvflare.app_opt.flower.controller import FlowerController
 from nvflare.app_opt.flower.executor import FlowerExecutor
 from nvflare.fuel.flare_api.flare_api import Session, new_secure_session
+
+# Directory where jobs will be exported
+# DEFAULT_JOB_DIR = "/tmp/nvflare/flower_job_config"
+DEFAULT_JOBS_DIR = "/home/pan/NVFlare/.cache"
 
 
 def _get_job_name(publisher: str, app_name: str, app_version: str) -> str:
@@ -68,28 +76,46 @@ def _locate_all_files(directory: Path) -> List[Path]:
 class PocEngine(FlowerSuperExecExecutor):
     """POC engine executor for Flower SuperExec."""
 
-    _sess = None
+    def __init__(self) -> None:
+        self._sess = None
+        self.job_dir = DEFAULT_JOBS_DIR
+        self.flwr_dir = None
 
     @override
-    def set_config(self, config: Dict[str, str]) -> None:
-        """Set executor config arguments."""
+    def set_config(
+        self,
+        config: UserConfig,
+    ) -> None:
+        """Set executor config arguments.
+
+        Parameters
+        ----------
+        config : UserConfig
+            A dictionary for configuration values.
+            Supported configuration key/value pairs:
+            - "job-dir": str
+                The directory to which jobs are exported.
+            - "flwr-dir": str
+                The path to the Flower directory.
+        """
         if not config:
             return
-        if superlink_address := config.get("superlink"):
-            # TODO: log warning
-            # No need to set superlink address
-            # This should be managed by NVFlare system
-            pass
-        if root_certificates := config.get("root-certificates"):
-            # TODO: log warning
-            # No need to set root certificates
-            # This should be managed by NVFlare system
-            pass
+        if job_dir := config.get("job-dir"):
+            if not isinstance(job_dir, str):
+                raise ValueError("The `job-dir` value should be of type `str`.")
+            self.job_dir = job_dir
         if flwr_dir := config.get("flwr-dir"):
-            self.flwr_dir = flwr_dir
+            if not isinstance(flwr_dir, str):
+                raise ValueError("The `flwr-dir` value should be of type `str`.")
+            self.flwr_dir = str(flwr_dir)
 
     @override
-    def start_run(self, fab_file: bytes, override_config: Dict[str, str]) -> Optional[RunTracker]:
+    def start_run(
+        self,
+        fab_file: bytes,
+        override_config: UserConfig,
+        federation_config: UserConfig,
+    ) -> Optional[RunTracker]:
         """Start run using Flare Engine."""
         try:
             # Load FAB file and extract metadata
@@ -99,9 +125,7 @@ class PocEngine(FlowerSuperExecExecutor):
             fab_path = install_from_fab(fab_file, None, True)
 
             # Retrieve the FAB info
-            print(f"FAB path: {fab_path}")
             config = get_project_config(fab_path)
-            print(f"FAB config: {config}")
             server_app_ref = config["tool"]["flwr"]["app"]["components"]["serverapp"]
             client_app_ref = config["tool"]["flwr"]["app"]["components"]["clientapp"]
 
@@ -118,13 +142,13 @@ class PocEngine(FlowerSuperExecExecutor):
             # Locate all allowed files in the FAB directory
             files = _locate_all_files(Path(fab_path))
 
+            # TODO: send override_config to Server Job and then to the SuperLink
             # Define the controller workflow and send to server
             controller = FlowerController(server_app=server_app_ref)
             job.to(controller, "server")
 
             # Add flwr server code
             for file in files:
-                print(f"Sending to job: {file}")
                 job.to(str(file.absolute()), "server")
 
             # Add clients
@@ -136,27 +160,51 @@ class PocEngine(FlowerSuperExecExecutor):
                 for file in files:
                     job.to(str(file.absolute()), f"site-{i}")
 
-            # TODO: Use job export and simulator run
-            job.export_job("/Users/panheng/Projects/NVFlare/.cache/jobs/job_config")
-            job_path = Path("/Users/panheng/Projects/NVFlare/.cache/jobs/job_config") / job_name
+            # Export job
+            job_path = Path(self.job_dir) / job_name
+            job.export_job(job_path.parent)
+
+            # TODO: Remove this line
             print(f"Job exported to: {str(job_path)}")
-            # job.simulator_run("/Users/panheng/Projects/NVFlare/.cache/jobs/workdir")
 
             self.sess.submit_job(str(job_path))
 
             # TODO: Return RunTracker
             return RunTracker(run_id=0, proc=None)  # Replace with actual run_id and proc
         except Exception as e:
-            # TODO: log error
-            raise e from None
+            import traceback
+
+            log(ERROR, "Could not start run: %s", traceback.format_exc())
+            return None
 
     @property
     def sess(self) -> Session:
-        if self._sess is None:
-            self._sess = new_secure_session(
-                "admin@nvidia.com", "/tmp/nvflare/poc/example_project/prod_00/admin@nvidia.com"
-            )
-            print("Session created.")
+        if self._sess is not None:
+            return self._sess
+
+        # Obtain the POC workspace
+        workspace = cmds.get_poc_workspace()
+
+        # Load the project config and the service config
+        project_config, service_config = cmds.setup_service_config(workspace)
+
+        # Obtain the admin user name
+        admin_username: str = cmds.get_proj_admin(project_config)
+
+        # Obtain the path to start.sh
+        shell_path = cmds.get_service_command(
+            cmd_type=cmds.CMD_START_POC,
+            prod_dir=cmds.get_prod_dir(workspace),
+            service_dir=admin_username,
+            service_config=service_config,
+        )
+
+        # Create a new session
+        startup_kit_path = str(Path(shell_path).parent.parent)
+        self._sess = new_secure_session(username=admin_username, startup_kit_location=startup_kit_path)
+
+        # TODO: Remove this line
+        print(f"Session created:\nusername={admin_username}\nstartup_kit_location={startup_kit_path}")
         return self._sess
 
 
